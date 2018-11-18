@@ -11,7 +11,7 @@ var makeAssembly = false;
 var Executable = xdc.module('xdc.bld.Executable');
 
 var exeOpts = new Executable.Attrs({
-        cfgScript: 'C:/Users/Julio/workspace_v8/Period_Meas/period_rtos.cfg',
+        cfgScript: 'C:/Users/Julio/workspace_v8/PulseWidth_Meas/pw_rtos.cfg',
         profile: 'release',
         cfgHome: 'configPkg',
 });
@@ -20,7 +20,7 @@ exeOpts.cfgArgs = 'null';
 exeOpts.cfgArgsEncoded = true;
 
 var exe = Pkg[makeAssembly ? 'addAssembly': 'addExecutable'](
-    'period_rtos',
+    'pw_rtos',
     targ,
     platform,
     exeOpts
@@ -40,10 +40,10 @@ else {
 }
 
 var thisObj = {
-    cfg:        '../period_rtos.cfg',
-    outputPath: 'C:/Users/Julio/workspace_v8/Period_Meas/Debug/configPkg',
-    exeName:    'period_rtos' + suffix,
-    exeIntName: 'period_rtos' + suffix.replace('.', '_'),
+    cfg:        '../pw_rtos.cfg',
+    outputPath: 'C:/Users/Julio/workspace_v8/PulseWidth_Meas/Debug/configPkg',
+    exeName:    'pw_rtos' + suffix,
+    exeIntName: 'pw_rtos' + suffix.replace('.', '_'),
     targ:       targ,
     linkerCommandFile: 'linker.cmd',
     compilerOptFile: 'compiler.opt',

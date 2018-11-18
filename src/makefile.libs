@@ -1,6 +1,6 @@
 #
 # This file was generated based on the configuration script:
-#     C:\Users\Julio\workspace_v8\Period_Meas\period_rtos.cfg
+#     C:\Users\Julio\workspace_v8\PulseWidth_Meas\pw_rtos.cfg
 #
 # This makefile may be included in other makefiles that need to build
 # the libraries containing the compiled source files generated as
@@ -14,7 +14,7 @@
 #
 # The absolute path to the generated source directory (at the time the
 # sources were generated) is:
-#    C:\Users\Julio\workspace_v8\Period_Meas\src
+#    C:\Users\Julio\workspace_v8\PulseWidth_Meas\src
 #
 GEN_SRC_DIR ?= ../src
 

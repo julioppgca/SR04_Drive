@@ -35,12 +35,13 @@
 #include "project_includes/Board.h"
 
 void pwmInit(void);
+void pulseWidth_Init(void);
 void heartBeat_TASK(void);
 void captureEvent_HWI(void);
 
+
 /* ---- Globals -----*/
-uint32_t period;    // measured period  (40000 at test signal of 2kHz)
-uint32_t first;     // first edge value (always changing...)
+uint32_t pulseWidth;    // measured pulse width  (?????? at test signal of 2kHz)
 
 /*
  *  ======== main ========
@@ -73,7 +74,7 @@ int main(void)
 void pwmInit(void)
 {
     //Configure PWM Clock to match system - 80MHz.
-    SysCtlPWMClockSet(SYSCTL_PWMDIV_1);
+    SysCtlPWMClockSet(SYSCTL_PWMDIV_64);
 
     // Enable clock to Port A
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
@@ -108,7 +109,7 @@ void pwmInit(void)
 }
 
 /* ----- Timer period measurement init -----*/
-void periodInit(void)
+void pulseWidth_Init(void)
 {
     // Pin init
     //
@@ -123,6 +124,13 @@ void periodInit(void)
     MAP_GPIOPinConfigure(GPIO_PB6_T0CCP0);
     MAP_GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_6);
 
+    //
+    // Configure the GPIO Pin Mux for PB7
+    // for T0CCP1
+    //
+    MAP_GPIOPinConfigure(GPIO_PB7_T0CCP1);
+    MAP_GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_7);
+
     // Timer init
     // Enable timer peripheral clock
     SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
@@ -131,21 +139,27 @@ void periodInit(void)
     {
     }
 
-    //Disable timer to configure
-    TimerDisable(TIMER0_BASE, TIMER_A);
+
+    // Timer 0A init
+    //Disable timers to configure
+    TimerDisable(TIMER0_BASE, TIMER_A | TIMER_B);
 
     // Configure the timer
-    // Timer 0A 16bit capture time mode
-    TimerConfigure(TIMER0_BASE, TIMER_CFG_A_CAP_TIME | TIMER_CFG_SPLIT_PAIR);
+    // Timer 0A and 0B as 16bit capture time mode
+    TimerConfigure(TIMER0_BASE, TIMER_CFG_A_CAP_TIME | TIMER_CFG_B_CAP_TIME | TIMER_CFG_SPLIT_PAIR);
     // star at the top 2^16 = 65535 = 0xffff;
     TimerLoadSet(TIMER0_BASE, TIMER_A, 0x0000ffff);
+    TimerLoadSet(TIMER0_BASE, TIMER_B, 0x0000ffff);
 
     // set prescale to get 24 bits
     // 0xffff * 0xff = 0xffffff
     TimerPrescaleSet(TIMER0_BASE, TIMER_A, 0xff);
+    TimerPrescaleSet(TIMER0_BASE, TIMER_B, 0xff);
 
-    // set to rising edge event of T0CCP0
-    TimerControlEvent(TIMER0_BASE, TIMER_A, TIMER_EVENT_POS_EDGE);
+    // set to falling edge event of T0CCP0
+    TimerControlEvent(TIMER0_BASE, TIMER_A, TIMER_EVENT_NEG_EDGE);
+    // set to falling edge event of T0CCP1
+    TimerControlEvent(TIMER0_BASE, TIMER_B, TIMER_EVENT_POS_EDGE);
 
     // interrup enable
     TimerIntEnable(TIMER0_BASE, TIMER_CAPA_EVENT);
@@ -153,8 +167,8 @@ void periodInit(void)
     // clear interrupt
     TimerIntClear(TIMER0_BASE, TIMER_CAPA_EVENT);
 
-    // enable timer 0A
-    TimerEnable(TIMER0_BASE, TIMER_A);
+    // enable timers
+    TimerEnable(TIMER0_BASE, TIMER_A | TIMER_B);
 
     // Timer interrupt enable
     IntEnable(INT_TIMER0A);
@@ -163,6 +177,9 @@ void periodInit(void)
 /* ----- Capture timer evet interrupt handler ---- */
 // called every first edge of T0CCP0 (PB6)
 // works good from 20Hz to ~200kHz (depends on software overhead)
+// PB6 and PB7 must be connected together
+// rising edge of PB7 copy timer value
+// falling edge of PB6 generate interrupt
 void captureEvent_HWI(void)
 {
     // clear interrupt flag
@@ -170,17 +187,15 @@ void captureEvent_HWI(void)
 
     // get the actual period
     // 0x00ffffff = 24 bit mask
-    period = (first - TimerValueGet(TIMER0_BASE, TIMER_A))&0x00ffffff;
+    pulseWidth = (TimerValueGet(TIMER0_BASE, TIMER_B) - TimerValueGet(TIMER0_BASE, TIMER_A))&0x00ffffff;
 
-    // get the timer value at the first edge
-    first = TimerValueGet(TIMER0_BASE, TIMER_A);
 }
 
 /* ----- There always a led blinking.... -----*/
 void heartBeat_TASK(void)
 {
 
-    periodInit();   // initialize period measurement timer
+    pulseWidth_Init();   // initialize pulse width measurement timer
     pwmInit();      // initialize pwm test signal
 
     while (1)

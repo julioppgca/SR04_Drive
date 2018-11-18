@@ -5,7 +5,7 @@
 #
 #  target compatibility key = ti.targets.arm.elf.M4F{1,0,18.1,4
 #
-period_rtos.xem4f: package/cfg/period_rtos.xem4f.mak
+pw_rtos.xem4f: package/cfg/pw_rtos.xem4f.mak
 
 clean::
-	-$(RM) package/cfg/period_rtos.xem4f.mak
+	-$(RM) package/cfg/pw_rtos.xem4f.mak
