@@ -110,6 +110,7 @@ void pwmInit(void)
 /* ----- Timer period measurement init -----*/
 void periodInit(void)
 {
+    // Pin init
     //
     // Enable Peripheral Clocks
     //
@@ -122,6 +123,7 @@ void periodInit(void)
     MAP_GPIOPinConfigure(GPIO_PB6_T0CCP0);
     MAP_GPIOPinTypeTimer(GPIO_PORTB_BASE, GPIO_PIN_6);
 
+    // Timer init
     // Enable timer peripheral clock
     SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER0);
     SysCtlPeripheralReset(SYSCTL_PERIPH_TIMER0);
@@ -133,13 +135,16 @@ void periodInit(void)
     TimerDisable(TIMER0_BASE, TIMER_A);
 
     // Configure the timer
+    // Timer 0A 16bit capture time mode
     TimerConfigure(TIMER0_BASE, TIMER_CFG_A_CAP_TIME | TIMER_CFG_SPLIT_PAIR);
+    // star at the top 2^16 = 65535 = 0xffff;
     TimerLoadSet(TIMER0_BASE, TIMER_A, 0x0000ffff);
 
     // set prescale to get 24 bits
+    // 0xffff * 0xff = 0xffffff
     TimerPrescaleSet(TIMER0_BASE, TIMER_A, 0xff);
 
-    // rising edge event
+    // set to rising edge event of T0CCP0
     TimerControlEvent(TIMER0_BASE, TIMER_A, TIMER_EVENT_POS_EDGE);
 
     // interrup enable
@@ -148,15 +153,16 @@ void periodInit(void)
     // clear interrupt
     TimerIntClear(TIMER0_BASE, TIMER_CAPA_EVENT);
 
-    // enable timer to configure
+    // enable timer 0A
     TimerEnable(TIMER0_BASE, TIMER_A);
 
-    // interrupt enable
+    // Timer interrupt enable
     IntEnable(INT_TIMER0A);
 }
 
 /* ----- Capture timer evet interrupt handler ---- */
 // called every first edge of T0CCP0 (PB6)
+// works good from 20Hz to ~200kHz (depends on software overhead)
 void captureEvent_HWI(void)
 {
     // clear interrupt flag
