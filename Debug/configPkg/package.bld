@@ -11,7 +11,7 @@ var makeAssembly = false;
 var Executable = xdc.module('xdc.bld.Executable');
 
 var exeOpts = new Executable.Attrs({
-        cfgScript: 'C:/Users/Julio/workspace_v8/PulseWidth_Meas/pw_rtos.cfg',
+        cfgScript: 'C:/Users/Julio/workspace_v8/SR04_Drive/sr04_rtos.cfg',
         profile: 'release',
         cfgHome: 'configPkg',
 });
@@ -20,7 +20,7 @@ exeOpts.cfgArgs = 'null';
 exeOpts.cfgArgsEncoded = true;
 
 var exe = Pkg[makeAssembly ? 'addAssembly': 'addExecutable'](
-    'pw_rtos',
+    'sr04_rtos',
     targ,
     platform,
     exeOpts
@@ -40,10 +40,10 @@ else {
 }
 
 var thisObj = {
-    cfg:        '../pw_rtos.cfg',
-    outputPath: 'C:/Users/Julio/workspace_v8/PulseWidth_Meas/Debug/configPkg',
-    exeName:    'pw_rtos' + suffix,
-    exeIntName: 'pw_rtos' + suffix.replace('.', '_'),
+    cfg:        '../sr04_rtos.cfg',
+    outputPath: 'C:/Users/Julio/workspace_v8/SR04_Drive/Debug/configPkg',
+    exeName:    'sr04_rtos' + suffix,
+    exeIntName: 'sr04_rtos' + suffix.replace('.', '_'),
     targ:       targ,
     linkerCommandFile: 'linker.cmd',
     compilerOptFile: 'compiler.opt',
